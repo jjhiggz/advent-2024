@@ -16,7 +16,10 @@ export type Cell<T> = {
   position: Position;
   positionTag: () => string;
   value: T | undefined;
-  adjacentCells: () => AdjacentCellWrap<T>[];
+  adjacentCells: {
+    array: () => AdjacentCellWrap<T>[];
+    map: () => Record<AdjacentLocation, Cell<T> | undefined>;
+  };
 };
 
 type TraverseDirection = "up" | "down" | "left" | "right";
@@ -88,16 +91,40 @@ export class Matrix<T> {
       value: valAt,
       position,
       positionTag: () => tagPosition(position),
-      adjacentCells: () =>
-        allAdjacentLocations
-          .map((location) => ({
-            location,
-            cell: this.getTraversedCell(
-              position,
-              locationToDirections[location]
-            )!,
-          }))
-          .filter((n) => n.cell !== undefined),
+      adjacentCells: {
+        array: () =>
+          allAdjacentLocations
+            .map((location) => ({
+              location,
+              cell: this.getTraversedCell(
+                position,
+                locationToDirections[location]
+              )!,
+            }))
+            .filter((n) => n.cell !== undefined),
+        map: (): Record<AdjacentLocation, Cell<T> | undefined> => ({
+          "lower-left": this.getTraversedCell(
+            position,
+            locationToDirections["lower-left"]
+          ),
+          up: this.getTraversedCell(position, locationToDirections["up"]),
+          down: this.getTraversedCell(position, locationToDirections["down"]),
+          left: this.getTraversedCell(position, locationToDirections["left"]),
+          right: this.getTraversedCell(position, locationToDirections["right"]),
+          "upper-left": this.getTraversedCell(
+            position,
+            locationToDirections["upper-left"]
+          ),
+          "upper-right": this.getTraversedCell(
+            position,
+            locationToDirections["upper-right"]
+          ),
+          "lower-right": this.getTraversedCell(
+            position,
+            locationToDirections["lower-right"]
+          ),
+        }),
+      },
     };
 
     return newCell;

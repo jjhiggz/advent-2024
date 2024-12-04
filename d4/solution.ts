@@ -1,7 +1,6 @@
-import { groupBy, pipe, uniqueBy } from "remeda";
+import { uniqueBy } from "remeda";
 import {
   allAdjacentLocations,
-  getPositionFromTag,
   Matrix,
   type AdjacentLocation,
   type Cell,
@@ -44,8 +43,8 @@ const getCellDataP1 = (
       }
       const lastCell = cellsAtLocation.at(-1) ?? rootCell;
 
-      const nextCell = lastCell
-        .adjacentCells()
+      const nextCell = lastCell.adjacentCells
+        .array()
         .find(
           (adjacentCell) =>
             adjacentCell.location === location &&
@@ -74,19 +73,21 @@ const getCellDataP1 = (
 const isCellValidCross = (cell: Cell<string>) => {
   if (cell.value !== "A") return false;
 
-  const cellMap = groupBy(cell.adjacentCells(), (n) => n.location);
-  const upperRight = cellMap["upper-right"]?.[0]?.cell?.value;
-  const upperLeft = cellMap["upper-left"]?.[0]?.cell?.value;
-  const lowerRight = cellMap["lower-right"]?.[0]?.cell?.value;
-  const lowerLeft = cellMap["lower-left"]?.[0]?.cell?.value;
+  const cellMap = cell.adjacentCells.map();
 
-  const line1 = [upperRight, lowerLeft].filter((n) => n);
-  const line2 = [upperLeft, lowerRight].filter((n) => n);
-  if (line1.length < 2) return false;
-  if (line2.length < 2) return false;
-  if (!["M", "S"].every((letter) => line1.includes(letter))) return false;
-  if (!["M", "S"].every((letter) => line2.includes(letter))) return false;
-  return true;
+  const upperRight = cellMap["upper-right"]?.value;
+  const upperLeft = cellMap["upper-left"]?.value;
+  const lowerRight = cellMap["lower-right"]?.value;
+  const lowerLeft = cellMap["lower-left"]?.value;
+
+  const line1 = [upperRight, "A", lowerLeft];
+  const line2 = [upperLeft, "A", lowerRight];
+
+  return [line1, line2]
+    .map((l) => l.filter((n) => n).join(""))
+    .every((line) => {
+      return line === "MAS" || line === "SAM";
+    });
 };
 
 const solution = (input: string) => {
@@ -100,33 +101,14 @@ const solution = (input: string) => {
     (cell) => getCellDataP1(cell).validPaths
   );
 
-  const allTouchedCells = pipe(
-    allValidStartingCells.map(getCellDataP1),
-    (n) => n.map((cellData) => cellData.touchedCells),
-    (n) => n.flat(),
-    uniqueBy((n) => n.positionTag())
-  );
-
-  const correctedMatrix = matrix.replaceValueWhere(
-    (cell) => {
-      return !allTouchedCells.some(
-        (touchedCell) => touchedCell.positionTag() === cell.positionTag()
-      );
-    },
-    () => "."
-  );
-  let debug = false;
-  if (debug) {
-    console.log(correctedMatrix.printText());
-  }
-
   return allValidPaths.length;
 };
 
 const solutionP2 = (input: string) => {
   const matrix = buildMatrix(input);
   const xs = matrix.findAll(isCellValidCross);
-  console.log(xs.length);
+  return xs.length;
 };
 
-solutionP2(realFile);
+console.log(solution(realFile));
+console.log(solutionP2(realFile));
