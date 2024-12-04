@@ -1,80 +1,95 @@
+import { maxBy } from "@std/collections/max-by";
+import { pipe, sumBy } from "remeda";
+
 export type Position = [number, number];
-export type AdjacentLocation = (typeof allAdjacentLocations)[number];
+export type AdjacentLocation =
+  (typeof allAdjacentLocations)[number];
 export type SubmatrixDef = {
   firstRow: number;
   lastRow: number;
   firstColumn: number;
   lastColumn: number;
 };
-
 export type AdjacentCellWrap<T> = {
   location: AdjacentLocation;
   cell: Cell<T>;
 };
-
 export type Cell<T> = {
   position: Position;
   positionTag: () => string;
-  value: T | undefined;
+  value: T;
   adjacentCells: {
     array: () => AdjacentCellWrap<T>[];
-    map: () => Record<AdjacentLocation, Cell<T> | undefined>;
+    map: () => Record<
+      AdjacentLocation,
+      Cell<T> | undefined
+    >;
   };
 };
+type TraverseDirection = "N" | "S" | "W" | "E";
 
-type TraverseDirection = "up" | "down" | "left" | "right";
-
-export const allAdjacentLocations = [
-  "up",
-  "left",
-  "right",
-  "down",
-  "upper-right",
-  "upper-left",
-  "lower-left",
-  "lower-right",
+const allAdjacentLocations = [
+  "N",
+  "W",
+  "E",
+  "S",
+  "NE",
+  "NW",
+  "SW",
+  "DW",
 ] as const;
 
-const locationToDirections: Record<AdjacentLocation, TraverseDirection[]> = {
-  right: ["right"],
-  down: ["down"],
-  up: ["up"],
-  left: ["left"],
-  "lower-left": ["left", "down"],
-  "lower-right": ["right", "down"],
-  "upper-left": ["up", "left"],
-  "upper-right": ["up", "right"],
+const locationToDirections: Record<
+  AdjacentLocation,
+  TraverseDirection[]
+> = {
+  E: ["E"],
+  S: ["S"],
+  N: ["N"],
+  W: ["W"],
+  "SW": ["W", "S"],
+  "DW": ["E", "S"],
+  "NW": ["N", "W"],
+  "NE": ["N", "E"],
 };
 
-const tagPosition = (position: Position) => `${position[0]}-${position[1]}`;
+const tagPosition = (position: Position) =>
+  `${position[0]}-${position[1]}`;
 
-export const getPositionFromTag = (tag: string) =>
+const getPositionFromTag = (tag: string) =>
   tag.split("-").map((n) => +n) as Position;
 
-export class Matrix<T> {
-  matrix: T[][];
+class Matrix<T> {
+  rows: T[][];
+  height: number;
+  width: number;
+  size: number;
 
   constructor(initialValues: T[][]) {
-    this.matrix = initialValues;
+    this.rows = initialValues;
+    this.height = initialValues.length;
+    this.width = maxBy(initialValues, (row) => row.length)
+      ?.length ?? 0;
+    this.size = this.height * this.width;
   }
 
   getTraversedCell = (
     position: Position,
-    traverseDirections: TraverseDirection[]
+    traverseDirections: TraverseDirection[],
   ): Cell<T> | undefined => {
     let [x, y] = position;
     for (const traverseDirection of traverseDirections) {
       switch (traverseDirection) {
-        case "down":
+        case "S":
           x++;
           continue;
-        case "up":
+        case "N":
           x--;
           continue;
-        case "left":
+        case "W":
           y--;
           continue;
-        case "right":
+        case "E":
           y++;
           continue;
       }
@@ -85,7 +100,7 @@ export class Matrix<T> {
 
   cellAt = (position: Position): Cell<T> | undefined => {
     const [x, y] = position;
-    const valAt = this.matrix[x]?.[y];
+    const valAt = this.rows[x]?.[y];
     if (valAt === undefined) return undefined;
     const newCell: Cell<T> = {
       value: valAt,
@@ -98,30 +113,45 @@ export class Matrix<T> {
               location,
               cell: this.getTraversedCell(
                 position,
-                locationToDirections[location]
+                locationToDirections[location],
               )!,
             }))
             .filter((n) => n.cell !== undefined),
-        map: (): Record<AdjacentLocation, Cell<T> | undefined> => ({
-          "lower-left": this.getTraversedCell(
+        map: (): Record<
+          AdjacentLocation,
+          Cell<T> | undefined
+        > => ({
+          "SW": this.getTraversedCell(
             position,
-            locationToDirections["lower-left"]
+            locationToDirections["SW"],
           ),
-          up: this.getTraversedCell(position, locationToDirections["up"]),
-          down: this.getTraversedCell(position, locationToDirections["down"]),
-          left: this.getTraversedCell(position, locationToDirections["left"]),
-          right: this.getTraversedCell(position, locationToDirections["right"]),
-          "upper-left": this.getTraversedCell(
+          N: this.getTraversedCell(
             position,
-            locationToDirections["upper-left"]
+            locationToDirections["N"],
           ),
-          "upper-right": this.getTraversedCell(
+          S: this.getTraversedCell(
             position,
-            locationToDirections["upper-right"]
+            locationToDirections["S"],
           ),
-          "lower-right": this.getTraversedCell(
+          W: this.getTraversedCell(
             position,
-            locationToDirections["lower-right"]
+            locationToDirections["W"],
+          ),
+          E: this.getTraversedCell(
+            position,
+            locationToDirections["E"],
+          ),
+          "NW": this.getTraversedCell(
+            position,
+            locationToDirections["NW"],
+          ),
+          "NE": this.getTraversedCell(
+            position,
+            locationToDirections["NE"],
+          ),
+          "DW": this.getTraversedCell(
+            position,
+            locationToDirections["DW"],
           ),
         }),
       },
@@ -131,33 +161,51 @@ export class Matrix<T> {
   };
 
   rowsAsRaw = (): T[][] => {
-    const rows: T[][] = [];
-
-    for (const row of this.matrix) {
-      rows.push([]);
-      for (const j of row) {
-        rows.at(-1)?.push(j);
-      }
-    }
-
-    return rows;
+    return this.rows;
   };
 
   rowsAsCells = (): Cell<T>[][] => {
-    const rows: Cell<T>[][] = [];
-    for (let i = 0; i < this.matrix.length; i++) {
-      const row = this.matrix[i];
-      rows.push([]);
-      for (let j = 0; j < row.length; j++) {
+    return this.rows.map((row, i) =>
+      row.map((_, j) => {
         const cell = this.cellAt([i, j]);
-        if (!cell) throw new Error(`Could not find cell at ${i}, ${j}`);
-        rows.at(-1)?.push(cell);
-      }
-    }
-    return rows;
+        if (cell == undefined) {
+          throw new Error("Invalid Rows");
+        }
+        return cell;
+      })
+    );
   };
 
-  cols = () => {};
+  colsAsCells = () => {
+    const cols: Cell<T>[][] = [];
+    const maxRow =
+      maxBy(this.rows, (row) => row.length)?.length ?? 0;
+
+    for (let j = 0; j < maxRow; j++) {
+      for (let i = 0; i < this.rows.length; i++) {
+        cols[j] = cols[j] ?? [];
+
+        const cell = this.cellAt([i, j]);
+        if (!cell) {
+          continue;
+        }
+        cols[j].push(cell);
+      }
+    }
+
+    return cols;
+  };
+
+  colsAsRaw = (): T[][] => {
+    return this.colsAsCells().map((col) =>
+      col.map((cell) => {
+        if (!cell) {
+          throw new Error("Invalid Cols");
+        }
+        return cell.value;
+      })
+    );
+  };
 
   printText = (type: "letters" = "letters") => {
     if (type === "letters") {
@@ -168,9 +216,11 @@ export class Matrix<T> {
     return this;
   };
 
-  forEach = <R>(cb: (input: Cell<T>, i: number, j: number) => R) => {
-    for (let i = 0; i < this.matrix.length; i++) {
-      const row = this.matrix[i];
+  forEachCell = <R>(
+    cb: (input: Cell<T>, i: number, j: number) => R,
+  ) => {
+    for (let i = 0; i < this.rows.length; i++) {
+      const row = this.rows[i];
       for (let j = 0; j < row.length; j++) {
         const cell = this.cellAt([i, j]);
         if (!cell) throw new Error("Something went wrong");
@@ -179,12 +229,22 @@ export class Matrix<T> {
     }
   };
 
-  findAll = (
-    cb: (input: Cell<T>, i: number, j: number) => boolean
+  sumEachCell = (
+    cb: (input: Cell<T>, i: number, j: number) => number,
+  ): number => {
+    let sum = 0;
+    this.forEachCell((cell, i, j) => {
+      sum += cb(cell, i, j);
+    });
+    return sum;
+  };
+
+  findAllCellsWhere = (
+    cb: (input: Cell<T>, i: number, j: number) => boolean,
   ): Cell<T>[] => {
     const cells: Cell<T>[] = [];
 
-    this.forEach((cell, i, j) => {
+    this.forEachCell((cell, i, j) => {
       if (cb(cell, i, j)) {
         cells.push(cell);
       }
@@ -193,22 +253,65 @@ export class Matrix<T> {
     return cells;
   };
 
-  replaceValueWhere = (
+  replaceCellValueWhere = (
     cb: (input: Cell<T>, i: number, j: number) => boolean,
-    replaceWith: (input: T) => T
+    replaceWith: (input: T) => T,
   ): Matrix<T> => {
-    const cells = this.findAll(cb);
+    const cells = this.findAllCellsWhere(cb);
     const positions = cells.map((cell) => cell.position);
 
     return new Matrix(
-      structuredClone(this.matrix).map((row, i) => {
+      structuredClone(this.rows).map((row, i) => {
         return row.map((valAtJ, j) => {
           const isValidPosition = positions.some(
-            (position) => position[0] === i && position[1] === j
+            (position) =>
+              position[0] === i && position[1] === j,
           );
-          return isValidPosition ? replaceWith(valAtJ) : valAtJ;
+          return isValidPosition
+            ? replaceWith(valAtJ)
+            : valAtJ;
         });
-      })
+      }),
+    );
+  };
+
+  sumEachRowBy = (
+    cb: (input: Cell<T>, i: number) => number,
+  ) => {
+    return this.rowsAsCells().map((row, i) =>
+      pipe(
+        row,
+        sumBy((cell) => cb(cell, i)),
+      )
+    );
+  };
+
+  map = <Return>(
+    cb: (cell: Cell<T>, i: number, j: number) => Return,
+  ): Matrix<Return> => {
+    return new Matrix(
+      this.rowsAsCells().map((row, i) =>
+        row.map((cell, j) => cb(cell, i, j))
+      ),
+    );
+  };
+
+  reduce = <Return>(
+    cb: (
+      acc: Return,
+      cell: Cell<T>,
+      i: number,
+      j: number,
+    ) => Return,
+    initialValue: Return,
+  ): Return => {
+    return this.rowsAsCells().reduce(
+      (acc, row, i) =>
+        row.reduce(
+          (acc, cell, j) => cb(acc, cell, i, j),
+          acc,
+        ),
+      initialValue,
     );
   };
 
@@ -219,9 +322,47 @@ export class Matrix<T> {
     lastRow,
   }: SubmatrixDef) => {
     return new Matrix(
-      this.matrix
+      this.rows
         .filter((_, i) => i >= firstRow && i <= lastRow)
-        .map((row) => row.slice(firstColumn, lastColumn + 1))
+        .map((row) =>
+          row.slice(firstColumn, lastColumn + 1)
+        ),
     );
   };
+
+  pushRow = (row: T[]) => {
+    this.rows.push(row);
+  };
+
+  pushCol = (col: T[]) => {
+    for (let i = 0; i < col.length; i++) {
+      this.rows[i].push(col[i]);
+    }
+  };
+
+  transpose = (): Matrix<T> => {
+    return new Matrix(this.colsAsRaw());
+  };
+
+  dotProduct = (
+    other: Matrix<T>,
+    extractValue: (input: T) => number,
+  ): number => {
+    let sum = 0;
+    this.forEachCell((cell, i, j) => {
+      const otherCell = other.cellAt([i, j]);
+      if (!otherCell) throw new Error("Invalid other cell");
+
+      sum += extractValue(cell.value) *
+        extractValue(otherCell.value);
+    });
+    return sum;
+  };
 }
+
+const Constants = {
+  allAdjacentLocations,
+  getPositionFromTag,
+  locationToDirections,
+};
+export { Constants, Matrix };
