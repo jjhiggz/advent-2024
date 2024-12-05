@@ -60,17 +60,6 @@ Deno.test(
             node.value
         );
 
-        console.log(
-            [
-                "John",
-                "Mary",
-                "Bob",
-                "Alice",
-                "Steve",
-                "Carol",
-            ],
-        );
-
         assertEquals(descendants, [
             "John",
             "Mary",
@@ -82,66 +71,66 @@ Deno.test(
     },
 );
 
-// Deno.test("Should calculate total depth of tree", () => {
-//     const tree = new Tree(1);
+Deno.test("Should calculate total depth of tree", () => {
+    const tree = new Tree(1);
 
-//     tree.addChild(1, 2);
-//     tree.addChild(1, 3);
-//     tree.addChild(2, 4);
-//     tree.addChild(4, 5);
+    tree.addChild({
+        child: 2,
+        toParent: 1,
+    });
+    tree.addChild({
+        child: 3,
+        toParent: 1,
+    });
+    tree.addChild({
+        child: 4,
+        toParent: 2,
+    });
+    tree.addChild({
+        child: 5,
+        toParent: 4,
+    });
 
-//     const maxDepth = tree.traverse((node) => ({
-//         value: node.value,
-//         depth: node.children.length
-//             ? Math.max(
-//                 ...node.children.map((c) =>
-//                     c.children.length
-//                 ),
-//             ) + 1
-//             : 0,
-//     }))
-//         .reduce(
-//             (max, node) => Math.max(max, node.depth),
-//             0,
-//         );
+    const maxDepth = tree.traverse((node) => ({
+        value: node.value,
+        depth: node.children.length
+            ? Math.max(
+                ...node.children.map((c) =>
+                    c.children.length
+                ),
+            ) + 1
+            : 0,
+    }))
+        .reduce(
+            (max, node) => Math.max(max, node.depth),
+            0,
+        );
 
-//     assertEquals(maxDepth, 2);
-// });
+    assertEquals(maxDepth, 2);
+});
 
 // Deno.test("Should transform tree values and sum them", () => {
 //     const tree = new Tree(5);
 
-//     tree.addChild(5, 3);
-//     tree.addChild(5, 7);
-//     tree.addChild(3, 2);
-//     tree.addChild(3, 4);
-//     tree.addChild(7, 6);
+//     tree.addChild({
+//         child: 3,
+//         toParent: 5,
+//     });
+//     tree.addChild({
+//         child: 7,
+//         toParent: 5,
+//     });
+//     tree.addChild({
+//         child: 2,
+//         toParent: 3,
+//     });
 
 //     const doubledTree = tree.map((value) => value * 2);
-//     const sum = doubledTree.reduce(
-//         (acc, val) => acc + val,
-//         0,
-//     );
+//     const sum = doubledTree.traverse((node) => node.value)
+//         .reduce(
+//             (acc, val) => acc + val,
+//             0,
+//         );
 
 //     assertEquals(sum, 54); // (5+3+7+2+4+6) * 2
-// });
-
-// Deno.test("Should find all leaf nodes", () => {
-//     const tree = new Tree("root");
-
-//     tree.addChild("root", "branch1");
-//     tree.addChild("root", "branch2");
-//     tree.addChild("branch1", "leaf1");
-//     tree.addChild("branch2", "leaf2");
-//     tree.addChild("branch2", "leaf3");
-
-//     console.log(tree.printText());
-//     const leafNodes = tree.traverse((node) => ({
-//         value: node.value,
-//         isLeaf: node.children.length === 0,
-//     }))
-//         .filter((node) => node.isLeaf)
-//         .map((node) => node.value);
-
-//     assertEquals(leafNodes, ["leaf1", "leaf2", "leaf3"]);
 // });
