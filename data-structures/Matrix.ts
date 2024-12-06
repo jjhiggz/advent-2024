@@ -1,7 +1,7 @@
 import { maxBy } from "@std/collections/max-by";
 import { pipe, sumBy } from "remeda";
 
-export type Position = [number, number];
+export type Direction = [number, number];
 export type AdjacentLocation =
   (typeof allAdjacentLocations)[number];
 export type SubmatrixDef = {
@@ -15,7 +15,7 @@ export type AdjacentCellWrap<T> = {
   cell: Cell<T>;
 };
 export type Cell<T> = {
-  position: Position;
+  position: Direction;
   positionTag: () => string;
   value: T;
   adjacentCells: {
@@ -53,11 +53,11 @@ const locationToDirections: Record<
   "NE": ["N", "E"],
 };
 
-const tagPosition = (position: Position) =>
+const tagPosition = (position: Direction) =>
   `${position[0]}-${position[1]}`;
 
 const getPositionFromTag = (tag: string) =>
-  tag.split("-").map((n) => +n) as Position;
+  tag.split("-").map((n) => +n) as Direction;
 
 class Matrix<T> {
   rows: T[][];
@@ -74,7 +74,7 @@ class Matrix<T> {
   }
 
   getTraversedCell = (
-    position: Position,
+    position: Direction,
     traverseDirections: TraverseDirection[],
   ): Cell<T> | undefined => {
     let [x, y] = position;
@@ -98,7 +98,7 @@ class Matrix<T> {
     return this.cellAt([x, y]);
   };
 
-  cellAt = (position: Position): Cell<T> | undefined => {
+  cellAt = (position: Direction): Cell<T> | undefined => {
     const [x, y] = position;
     const valAt = this.rows[x]?.[y];
     if (valAt === undefined) return undefined;
