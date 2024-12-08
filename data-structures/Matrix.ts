@@ -98,6 +98,10 @@ class Matrix<T> {
     return this.cellAt([x, y]);
   };
 
+  changeCellValue = (position: Direction, newValue: T) => {
+    this.rows[position[0]][position[1]] = newValue;
+  };
+
   cellAt = (position: Direction): Cell<T> | undefined => {
     const [x, y] = position;
     const valAt = this.rows[x]?.[y];
@@ -359,6 +363,19 @@ class Matrix<T> {
     return sum;
   };
 }
+
+export const Cells = {
+  distance: <T>(cell1: Cell<T>, cell2: Cell<T>) => {
+    return {
+      x: Math.abs(cell1.position[1] - cell2.position[1]),
+      y: Math.abs(cell1.position[0] - cell2.position[0]),
+    } as const;
+  },
+  slope: <T>(cell1: Cell<T>, cell2: Cell<T>) => {
+    return (cell1.position[1] - cell2.position[1]) /
+      (cell1.position[0] - cell2.position[0]);
+  },
+};
 
 const Constants = {
   allAdjacentLocations,

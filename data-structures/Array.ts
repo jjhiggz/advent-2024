@@ -371,7 +371,21 @@ const moveItemRightWhenMut = <T>(
     return moveItemRightMut(arr, position, by);
 };
 
+const joinWith = <T>(
+    arr: T[],
+    cb: (el: T, i: number) => string,
+) => {
+    let str = "";
+
+    for (let i = 0; i < arr.length; i++) {
+        str += cb(arr[i], i);
+    }
+
+    return str;
+};
+
 export const Arr = {
+    joinWith,
     moveItemLeftWhenMut,
     moveItemRightWhenMut,
     swapPositionsWhen,
