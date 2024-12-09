@@ -384,7 +384,16 @@ const joinWith = <T>(
     return str;
 };
 
+const repeat = <T>(input: T, times: number) => {
+    let arr = [];
+    for (let i = 0; i < times; i++) {
+        arr.push(input);
+    }
+    return arr;
+};
+
 export const Arr = {
+    repeat,
     joinWith,
     moveItemLeftWhenMut,
     moveItemRightWhenMut,

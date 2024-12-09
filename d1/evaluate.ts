@@ -1,58 +1,44 @@
-import { sortBy } from "@std/collections";
+import { sortBy, unzip } from "@std/collections";
 import { pipe } from "remeda";
 const isReal = true;
 const result = isReal
   ? await Deno.readTextFile("d1/real.txt")
   : await Deno.readTextFile("d1/example.txt");
 
-const processFile = (input: string) => {
+const columns = (input: string) => {
   const asArray = pipe(
     input,
     (i) => i.split("\n"),
-    (n) => n.map((line) => line.split(/\s+/).map((n) => +n))
+    (n) =>
+      n.map((line) => line.split(/\s+/).map((n) => +n)),
   );
 
-  const left = sortBy(
-    asArray.map((n) => n[0]),
-    (n) => n
-  );
-  const right = sortBy(
-    asArray.map((n) => {
-      return n[1];
-    }),
-    (n) => n
-  );
+  const [left, right] = unzip(asArray);
 
-  //   console.log(asArray);
-
-  return left.reduce((acc, el, i) => acc + Math.abs(el - right[i]), 0);
+  return {
+    left,
+    right,
+  };
 };
 
+const processFile = (input: string) => {
+  const { left, right } = columns(input);
+
+  return left.reduce(
+    (acc, el, i) => acc + Math.abs(el - right[i]),
+    0,
+  );
+};
+
+// 19437052
 const processFileP2 = (input: string) => {
-  const asArray = pipe(
-    input,
-    (i) => i.split("\n"),
-    (n) => n.map((line) => line.split(/\s+/).map((n) => +n))
-  );
+  const { left, right } = columns(input);
 
-  const left = sortBy(
-    asArray.map((n) => n[0]),
-    (n) => n
+  return left.reduce(
+    (acc, el) =>
+      acc + el * right.filter((rel) => el === rel).length,
+    0,
   );
-
-  const right = sortBy(
-    asArray.map((n) => {
-      return n[1];
-    }),
-    (n) => n
-  );
-
-  const rightMap = right.reduce(
-    (acc, el) => acc.set(el, (acc.get(el) ?? 0) + 1),
-    new Map<number, number>()
-  );
-
-  return left.reduce((acc, el) => (rightMap.get(el) ?? 0) * el + acc, 0);
 };
 
 console.log(processFileP2(result));
