@@ -1,7 +1,7 @@
 import { maxBy } from "@std/collections/max-by";
 import { pipe, sumBy } from "remeda";
 
-export type Direction = [number, number];
+export type Position = [number, number];
 export type AdjacentLocation =
   (typeof allAdjacentLocations)[number];
 export type SubmatrixDef = {
@@ -15,7 +15,7 @@ export type AdjacentCellWrap<T> = {
   cell: Cell<T>;
 };
 export type Cell<T> = {
-  position: Direction;
+  position: Position;
   positionTag: () => string;
   value: T;
   adjacentCells: {
@@ -53,11 +53,11 @@ const locationToDirections: Record<
   "NE": ["N", "E"],
 };
 
-const tagPosition = (position: Direction) =>
+const tagPosition = (position: Position) =>
   `${position[0]}-${position[1]}`;
 
 const getPositionFromTag = (tag: string) =>
-  tag.split("-").map((n) => +n) as Direction;
+  tag.split("-").map((n) => +n) as Position;
 
 class Matrix<T> {
   rows: T[][];
@@ -74,7 +74,7 @@ class Matrix<T> {
   }
 
   getTraversedCell = (
-    position: Direction,
+    position: Position,
     traverseDirections: TraverseDirection[],
   ): Cell<T> | undefined => {
     let [x, y] = position;
@@ -98,11 +98,11 @@ class Matrix<T> {
     return this.cellAt([x, y]);
   };
 
-  changeCellValue = (position: Direction, newValue: T) => {
+  changeCellValue = (position: Position, newValue: T) => {
     this.rows[position[0]][position[1]] = newValue;
   };
 
-  cellAt = (position: Direction): Cell<T> | undefined => {
+  cellAt = (position: Position): Cell<T> | undefined => {
     const [x, y] = position;
     const valAt = this.rows[x]?.[y];
     if (valAt === undefined) return undefined;

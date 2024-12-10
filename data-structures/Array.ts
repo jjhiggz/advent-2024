@@ -1,3 +1,5 @@
+import { array } from "ts-pattern";
+
 /**
  * Non-mutative
  * Swaps two elements in an array based on predicate functions.
@@ -382,6 +384,14 @@ const joinWith = <T>(
     }
 
     return str;
+};
+
+const cols = <T>(input: T[][]) => {
+    return input.reduce(
+        (acc, row) =>
+            row.flatMap((cell, i) => [cell, acc[i]]),
+        input,
+    );
 };
 
 const repeat = <T>(input: T, times: number) => {

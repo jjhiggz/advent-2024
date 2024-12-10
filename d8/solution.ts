@@ -5,8 +5,8 @@ import z from "zod";
 import {
     type Cell,
     Cells,
-    type Direction,
     Matrix,
+    type Position,
 } from "../data-structures/Matrix.ts";
 import { maxBy } from "@std/collections/max-by";
 import { minBy } from "@std/collections/min-by";
@@ -51,10 +51,10 @@ const getAllAntennas = (matrix: Matrix<string>) => {
 const getAllPossibleAntinodes = (
     antennaMap: Map<string, Cell<string>[]>,
     matrix: Matrix<string>,
-): Map<string, Direction[]> => {
+): Map<string, Position[]> => {
     const allPossibleAntinodes = new Map<
         string,
-        Direction[]
+        Position[]
     >();
 
     for (const entry of [...antennaMap.entries()]) {
@@ -89,7 +89,7 @@ const getAllPossibleAntinodes = (
                                 y * n,
                                 rightCell.position[1] +
                                 x * n,
-                            ] satisfies Direction
+                            ] satisfies Position
                         ),
                 );
                 const newPotentialLeftCellPositions = pipe(
@@ -101,7 +101,7 @@ const getAllPossibleAntinodes = (
                                 y * n,
                                 leftCell.position[1] -
                                 x * n,
-                            ] satisfies Direction
+                            ] satisfies Position
                         ),
                 );
                 allPossibleAntinodes.set(char, [
@@ -119,7 +119,7 @@ const getAllPossibleAntinodes = (
                                 y * n,
                                 rightCell.position[1] +
                                 x * n,
-                            ] satisfies Direction
+                            ] satisfies Position
                         ),
                 );
                 const newPotentialLeftCellPositions = pipe(
@@ -131,7 +131,7 @@ const getAllPossibleAntinodes = (
                                 y * n,
                                 leftCell.position[1] -
                                 x * n,
-                            ] satisfies Direction
+                            ] satisfies Position
                         ),
                 );
                 allPossibleAntinodes.set(char, [
@@ -149,7 +149,7 @@ const getAllPossibleAntinodes = (
 
 const applyAntinodesToMatrix = (
     matrix: Matrix<string>,
-    antinodesMap: Map<string, Direction[]>,
+    antinodesMap: Map<string, Position[]>,
 ) => {
     for (
         const [_val, positions] of antinodesMap.entries()
