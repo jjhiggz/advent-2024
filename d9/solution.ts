@@ -147,21 +147,3 @@ const solution = piped(
     // (n) => n.join(""),
     getChecksum,
 );
-// 6426302549414  is too low p2
-
-const exampleAnswer =
-    "00992111777.44.333....5555.6666.....8888..";
-//   00992111777.44.333....5555.6666.....8888...
-console.log(
-    // solution(`2333133121414131402`),
-    solution(real),
-);
-console.log(exampleAnswer);
-console.log(getChecksum([]));
-// console.log(solution(real));
-// console.log(
-//     solution(
-//         real,
-//     ),
-// );
-// );
