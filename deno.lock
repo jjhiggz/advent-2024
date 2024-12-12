@@ -1,6 +1,13 @@
 {
   "version": "4",
   "specifiers": {
+    "jsr:@core/iterutil@0.9": "0.9.0",
+    "jsr:@core/pipe@0.4": "0.4.0",
+    "jsr:@coven/constants@~0.3.3": "0.3.3",
+    "jsr:@coven/iterables@~0.3.3": "0.3.3",
+    "jsr:@coven/parsers@~0.3.3": "0.3.3",
+    "jsr:@coven/predicates@~0.3.3": "0.3.3",
+    "jsr:@coven/utils@~0.3.3": "0.3.3",
     "jsr:@std/assert@1": "1.0.8",
     "jsr:@std/collections@^1.0.9": "1.0.9",
     "jsr:@std/data-structures@^1.0.4": "1.0.4",
@@ -13,6 +20,35 @@
     "npm:zod@^3.23.8": "3.23.8"
   },
   "jsr": {
+    "@core/iterutil@0.9.0": {
+      "integrity": "29a4ba1af8e79c2d63d96df4948bb995afb5256568401711ae97a1ef06cc67a8"
+    },
+    "@core/pipe@0.4.0": {
+      "integrity": "e05fa7c582297de7954601755ef2eb7e77dacef226c04c7c9542a2ecd21eb048"
+    },
+    "@coven/constants@0.3.3": {
+      "integrity": "e70aac8ce67055832d08475619b9303cb362498c7a594886b8410a18cb81b8ef"
+    },
+    "@coven/iterables@0.3.3": {
+      "integrity": "f19d77213e27fb291b287cd3422db967fab5bdd391a321185ec20c25ba8ddca4",
+      "dependencies": [
+        "jsr:@coven/constants",
+        "jsr:@coven/predicates",
+        "jsr:@coven/utils"
+      ]
+    },
+    "@coven/parsers@0.3.3": {
+      "integrity": "18409742718a5d17f9722b76db616c23fbfb8e51caddb953c904e055ee4d4aef"
+    },
+    "@coven/predicates@0.3.3": {
+      "integrity": "026ed415d798b582e091b3d782ef0012dcb0a5598cc51ca4df809ee7297b155b",
+      "dependencies": [
+        "jsr:@coven/parsers"
+      ]
+    },
+    "@coven/utils@0.3.3": {
+      "integrity": "686eb49b81cc9f794bd251827928b1f06f92e22a814cd5939a6f2665c63b61a0"
+    },
     "@std/assert@1.0.8": {
       "integrity": "ebe0bd7eb488ee39686f77003992f389a06c3da1bbd8022184804852b2fa641b",
       "dependencies": [
@@ -493,6 +529,9 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@core/iterutil@0.9",
+      "jsr:@core/pipe@0.4",
+      "jsr:@coven/iterables@~0.3.3",
       "jsr:@std/assert@1",
       "jsr:@std/collections@^1.0.9",
       "jsr:@std/data-structures@^1.0.4",
